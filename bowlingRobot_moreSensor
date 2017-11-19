@@ -1,0 +1,105 @@
+#define UltrasonicSENSOR IN_4
+#define rightWheel OUT_B
+#define leftWheel OUT_C
+#define twoWheel OUT_BC
+#define arm OUT_A
+int RLwidth=800;//avoid box width
+int nearBox=20;//cm
+int detectBoxError=5;//how many count
+int openArmDegree=-40;//dergree of open servo arm to make ball out
+bool missionSuc=false;
+unsigned int moveTime=0;
+
+inline void initailSetup(){
+  TextOut(1,LCD_LINE7,"NTUME ROBOTIC");
+  TextOut(1,LCD_LINE8,"GIVE ME A+ !!");
+  SetSensorLowspeed(UltrasonicSENSOR);
+  RotateMotor(arm,30,-50);
+  OnFwdReg(arm,0,OUT_REGMODE_SPEED);
+}
+
+inline void turnRight90(){
+	//trun right
+  RotateMotorEx(twoWheel,50,220,-90,true,false);
+	Off(twoWheel);
+	Wait(100);
+ 	//go throught width
+  //OnRev(twoWheel,75);
+  //Wait(RLwidth);
+  int nearCounter=0;
+	int getoutCounter=0;
+	moveTime-=CurrentTick();
+	OnFwdReg(twoWheel,-50,OUT_REGMODE_SYNC);
+	while(true){
+		if (SensorUS(UltrasonicSENSOR)<nearBox) nearCounter++;
+		else nearCounter=0;
+		if(nearCounter>detectBoxError) break;
+	}
+	while(true){
+		if (SensorUS(UltrasonicSENSOR)>nearBox) getoutCounter++;
+		else getoutCounter=0;
+		if(getoutCounter>detectBoxError) break;
+	}
+	moveTime+=CurrentTick();
+  Off(twoWheel);
+	//trun left
+  RotateMotorEx(twoWheel,50,180,100,true,false);
+	Off(twoWheel);
+	Wait(100);
+}
+
+inline void goSkipBox(){
+  int nearCounter=0;
+	int getoutCounter=0;
+	OnFwdReg(twoWheel,-50,OUT_REGMODE_SYNC);
+	while(true){
+		if (SensorUS(UltrasonicSENSOR)<nearBox) nearCounter++;
+		else nearCounter=0;
+		if(nearCounter>detectBoxError) break;
+	}
+	while(true){
+		if (SensorUS(UltrasonicSENSOR)>nearBox) getoutCounter++;
+		else getoutCounter=0;
+		if(getoutCounter>detectBoxError) break;
+	}
+	Wait(200);
+	Off(twoWheel);
+}
+
+inline void turnLeft90(){
+	//trun left
+	/*OnFwd(leftWheel, 75);
+	OnRev(rightWheel, 75);
+ 	Wait(500);*/
+  RotateMotorEx(twoWheel,50,180,100,true,false);
+  Off(twoWheel);
+  Wait(100);
+ 	//go throught width
+ 	unsigned int stopTime=CurrentTick();
+  OnRev(twoWheel,75);
+	while(CurrentTick()-stopTime<moveTime){}
+  Off(twoWheel);
+	//trun right
+  RotateMotorEx(twoWheel,50,185,-90,true,false);
+  Wait(400);
+	Off(twoWheel);
+}
+
+inline void throwBall(){
+	RotateMotor(arm,50,openArmDegree);
+    OnFwdReg(arm,0,OUT_REGMODE_SPEED);
+    missionSuc=true;
+}
+
+task main(){
+  initailSetup();
+  while(missionSuc==false)
+  {
+    turnRight90();
+    goSkipBox();
+    turnLeft90();
+    throwBall();
+  }
+  TextOut(1,LCD_LINE7,"NTUME ROBOTIC");
+  TextOut(1,LCD_LINE8,"MISSION OK!");
+}
