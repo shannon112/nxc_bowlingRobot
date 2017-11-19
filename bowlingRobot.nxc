@@ -1,12 +1,12 @@
-#define UltrasonicSENSOR IN_1
+#define UltrasonicSENSOR IN_4
 #define rightWheel OUT_B
 #define leftWheel OUT_C
 #define twoWheel OUT_BC
 #define arm OUT_A
-int RLwidth=2000;//avoid box width
-int nearBox=10;//cm
+int RLwidth=800;//avoid box width
+int nearBox=20;//cm
 int detectBoxError=5;//how many count
-int openArmDegree=90;//dergree of open servo arm to make ball out
+int openArmDegree=-40;//dergree of open servo arm to make ball out
 bool missionSuc=false;
 
 inline void initailSetup(){
@@ -19,25 +19,23 @@ inline void initailSetup(){
 
 inline void turnRight90(){
 	//trun right
-	OnFwd(rightWheel, 75);
-	OnRev(leftWheel, 75);
- 	Wait(500);
+  RotateMotorEx(twoWheel,50,220,-90,true,false);
 	Off(twoWheel);
+	Wait(100);
  	//go throught width
-	OnFwdReg(twoWheel,50,OUT_REGMODE_SYNC);
-	Wait(RLwidth);
+  OnRev(twoWheel,75);
+  Wait(RLwidth);
 	Off(twoWheel);
 	//trun left
-	OnFwd(leftWheel, 75);
-	OnRev(rightWheel, 75);
- 	Wait(500);
+  RotateMotorEx(twoWheel,50,180,100,true,false);
 	Off(twoWheel);
+	Wait(100);
 }
 
 inline void goSkipBox(){
 	int nearCounter=0;
 	int getoutCounter=0;
-	OnFwdReg(twoWheel,50,OUT_REGMODE_SYNC);
+	OnFwdReg(twoWheel,-50,OUT_REGMODE_SYNC);
 	while(true){
 		if (SensorUS(UltrasonicSENSOR)<nearBox) nearCounter++;
 		else nearCounter=0;
@@ -48,28 +46,30 @@ inline void goSkipBox(){
 		else getoutCounter=0;
 		if(getoutCounter>detectBoxError) break;
 	}
+	Wait(200);
 	Off(twoWheel);
 }
 
 inline void turnLeft90(){
 	//trun left
-	OnFwd(leftWheel, 75);
+	/*OnFwd(leftWheel, 75);
 	OnRev(rightWheel, 75);
- 	Wait(500);
-	Off(twoWheel);
+ 	Wait(500);*/
+  RotateMotorEx(twoWheel,50,180,100,true,false);
+  Off(twoWheel);
+  Wait(100);
  	//go throught width
-	OnFwdReg(twoWheel,50,OUT_REGMODE_SYNC);
+  OnRev(twoWheel,75);
 	Wait(RLwidth);
 	Off(twoWheel);
 	//trun right
-	OnFwd(rightWheel, 75);
-	OnRev(leftWheel, 75);
- 	Wait(500);
+  RotateMotorEx(twoWheel,50,185,-90,true,false);
+  Wait(400);
 	Off(twoWheel);
 }
 
 inline void throwBall(){
-	RotateMotor(arm,80,openArmDegree);
+	RotateMotor(arm,50,openArmDegree);
     OnFwdReg(arm,0,OUT_REGMODE_SPEED);
     missionSuc=true;
 }
