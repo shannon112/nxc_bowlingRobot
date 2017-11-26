@@ -8,7 +8,7 @@ int nearBox=20;//cm
 int detectBoxError=5;//how many count
 int openArmDegree=-40;//dergree of open servo arm to make ball out
 bool missionSuc=false;
-unsigned int moveTime=0;
+float moveTime=0;
 
 inline void initailSetup(){
   TextOut(1,LCD_LINE7,"NTUME ROBOTIC");
@@ -41,9 +41,13 @@ inline void turnRight90(){
 		if(getoutCounter>detectBoxError) break;
 	}
 	moveTime+=CurrentTick();
+	//TextOut(1,LCD_LINE3,NumToStr(moveTime));
   Off(twoWheel);
 	//trun left
-  RotateMotorEx(twoWheel,50,180,100,true,false);
+  //RotateMotorEx(twoWheel,50,185,100,true,false);
+  OnRev(rightWheel,65);
+  OnFwd(leftWheel,65);
+  Wait(500);
 	Off(twoWheel);
 	Wait(100);
 }
@@ -62,22 +66,22 @@ inline void goSkipBox(){
 		else getoutCounter=0;
 		if(getoutCounter>detectBoxError) break;
 	}
-	Wait(200);
+	Wait(275); //change this
 	Off(twoWheel);
 }
 
 inline void turnLeft90(){
 	//trun left
-	/*OnFwd(leftWheel, 75);
-	OnRev(rightWheel, 75);
- 	Wait(500);*/
-  RotateMotorEx(twoWheel,50,180,100,true,false);
-  Off(twoWheel);
+  OnRev(rightWheel,65);
+  OnFwd(leftWheel,65);
+  Wait(500);
+	Off(twoWheel);
   Wait(100);
  	//go throught width
- 	unsigned int stopTime=CurrentTick();
-  OnRev(twoWheel,75);
-	while(CurrentTick()-stopTime<moveTime){}
+ 	float stopTime=CurrentTick();
+  OnRevReg(twoWheel,50,OUT_REGMODE_SYNC);
+	while((CurrentTick()-stopTime)<moveTime){ TextOut(1,LCD_LINE4,NumToStr(CurrentTick()-stopTime));   OnRevReg(twoWheel,50,OUT_REGMODE_SYNC);}
+  Wait(40);
   Off(twoWheel);
 	//trun right
   RotateMotorEx(twoWheel,50,185,-90,true,false);
@@ -86,6 +90,9 @@ inline void turnLeft90(){
 }
 
 inline void throwBall(){
+    OnFwdReg(twoWheel,50,OUT_REGMODE_SYNC);
+    Wait(50);
+  Off(twoWheel);
 	RotateMotor(arm,50,openArmDegree);
     OnFwdReg(arm,0,OUT_REGMODE_SPEED);
     missionSuc=true;
